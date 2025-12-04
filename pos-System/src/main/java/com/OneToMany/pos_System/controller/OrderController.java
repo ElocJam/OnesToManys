@@ -35,4 +35,36 @@ public class OrderController {
         return orderRepository.save(order);                         // save(order) inserts the order into the database
     }
 
+    @PutMapping("/{id}")                                                                    // PUT /api/orders/{id} = update existing order
+    public Order updateOrder(@PathVariable Long id, @RequestBody Order orderDetails) {
+
+        Order order = orderRepository.findById(id)                              // First find the existing order
+            .orElseThrow(() -> new ResponseStatusException(                     // throw error if not found
+                HttpStatus.NOT_FOUND,
+                "Order not found with id: " + id
+            ));
+
+        order.setTableNumber(orderDetails.getTableNumber());                    // Update the order fields with new values
+        order.setServerName(orderDetails.getServerName());
+        order.setGuestCount(orderDetails.getGuestCount());
+        order.setSubtotal(orderDetails.getSubtotal());
+        order.setTax(orderDetails.getTax());
+        order.setTotal(orderDetails.getTotal());
+        order.setNotes(orderDetails.getNotes());
+
+        return orderRepository.save(order);                                     // save the updated order back to the database
+    }
+
+    @DeleteMapping("/{id}")                                                     // DELETE /api/orders/{id} = delete order
+    @ResponseStatus(HttpStatus.NO_CONTENT)                                      // returns 204 'No Content' on success
+    public void deleteOrder(@PathVariable Long id) {
+
+        Order order = orderRepository.findById(id)                              // check if order exists
+            .orElseThrow(() -> new ResponseStatusException(                     // throw error if it doesnt
+                HttpStatus.NOT_FOUND,
+                "Order not found with id: " + id
+            ));
+
+        orderRepository.delete(order);                                          // delete the order, and all its items (due to CASCADE)
+    }
 }
