@@ -8,30 +8,30 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/items")
+@RestController                                         // Tells spring this handles web requests and automatically converts to/from JSON
+@RequestMapping("/api/items")                           // all endpoints in this class start with /api/items
 public class ItemController {
 
-    @Autowired
-    private ItemRepository itemRepository;
+    @Autowired                                          // Dependency injection - SPring automatically gives us an ItemRepository // lets us talk to database
+    private ItemRepository itemRepository;              
 
-    @GetMapping
-    public List<Item> getAllItems() {
+    @GetMapping                                         // handles Get /api/items // returns all items as a JSON array
+    public List<Item> getAllItems() {                   // Call repository to get all items from database // spring converts List<Item> to JSON
         return itemRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Item getItemById(@PathVariable Long id) {
+    @GetMapping("/{id}")                                        // handles GET /api/items/1, 2, 3 ... etc. // returns single item as JSON object
+    public Item getItemById(@PathVariable Long id) {            // PathVariable captures the {id} from the URL
         return itemRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
+            .orElseThrow(() -> new ResponseStatusException(     // if item doesnt exist, throw 404 Not Found error
                 HttpStatus.NOT_FOUND,
                 "Item not found with id: " + id
             )); 
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Item createItem(@RequestBody Item item) {
-        return itemRepository.save(item);
-    }
+    @PostMapping                                                // Handles POST /api/items // expects JSON in request body 
+    @ResponseStatus(HttpStatus.CREATED)                         // creates item with auto-generated ID as JSON // 201 created returned 
+    public Item createItem(@RequestBody Item item) {            // @RequestBody converts incoming JSON to Item object // spring calls all setters automatically
+        return itemRepository.save(item);                       // save item to database // after the save() the item.itemId will be populated by database
+    }                                                                   // Spring converts returned Item back to JSON and sends to client
 }

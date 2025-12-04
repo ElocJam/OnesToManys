@@ -29,6 +29,9 @@ public class Item {
 
     private String sides;                                   // option for sides
 
+    @Column(name = "side_price")                            // price for sides
+    private BigDecimal sidePrice;
+
     @Column(name = "item_total")                            // total cost for this item
     private BigDecimal itemTotal;
 

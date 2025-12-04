@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS items (                             -- create new ite
     item_price DECIMAL(10,2) NOT NULL,                         -- item price is a decimal number with 10 digits max, 2 digits after decimal point / NOT NULL = needs a field
     item_status VARCHAR(20) DEFAULT 'PENDING',                 -- item status can have up to 20 characters, defaults to "PENDING"
     sides TEXT,
+    side_price DECIMAL(10, 2),
     item_total DECIMAL(10,2),
     modifiers TEXT,
     FOREIGN KEY (order_id) REFERENCES orders(order_id)         -- the one to many relationship / FOREIGN KEY == order_id column in the items table . . . REFERENCES = orders(order_id) == must match an order_id in the orders table
