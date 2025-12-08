@@ -9,7 +9,8 @@ fetch('http://localhost:8080/api/orders')
             <td>${order.tableNumber}</td>
             <td>${order.serverName}</td>
             <td>${order.guestCount}</td>
-            <td>$${order.total}</td>
+            <td>$${order.total.toFixed(2)}</td>
+            <td>${order.notes || 'None'}</td> 
             `;
             tbody.appendChild(row);
         });
@@ -26,7 +27,11 @@ fetch('http://localhost:8080/api/items')
             <td>${item.orderId}</td>
             <td>${item.itemName}</td>
             <td>${item.itemQuantity}</td>
-            <td>$${item.itemPrice}</td>
+            <td>$${item.itemPrice.toFixed(2)}</td>
+            <td>${item.sides || 'None'}</td>
+            <td>$${item.sidePrice ? item.sidePrice.toFixed(2) : '0.00'}</td>
+            <td>$${item.itemTotal.toFixed(2)}</td>
+            <td>${item.modifiers || 'None'}</td> 
             `;
             tbody.appendChild(row);
         });
