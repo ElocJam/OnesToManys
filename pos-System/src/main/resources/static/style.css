@@ -1,0 +1,40 @@
+.main-title {
+    font-family: Georgia, serif;
+    font-size: 52px;
+    text-align: center;
+    color: #6a0dad;
+    margin: 30px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    font-style: italic;
+    border-bottom: 3px solid #d4a574;
+    padding-bottom: 15px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #8e44ad;
+    color: white;
+}
+
+h1 {
+    color: #6a0dad;
+    font-family: Georgia, serif;
+}
