@@ -84,7 +84,7 @@ export async function createOrder(orderData) {
 export async function updateOrder(orderId, orderData) {
     try {
 
-                console.log('=== UPDATE ORDER DEBUG ===');
+        console.log('=== UPDATE ORDER DEBUG ===');
         console.log('Order ID:', orderId);
         console.log('Order Data:', orderData);
         console.log('JSON being sent:', JSON.stringify(orderData, null, 2));
