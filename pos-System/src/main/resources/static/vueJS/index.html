@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nota-POS Vue.js</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">
+        <header>
+            <h1 class="main-title">Nota-Pos</h1>
+        </header>
+        <div id="landingView" class="view" v-if="currentView === 'landing'">
+            <div class="landing-container">
+                <div class="action-section">
+                    <h2>Orders</h2>
+                    <div class="button-group">
+                        <button @click="loadAndShowOrders" class="action-btn">Show All Orders</button>
+                        <button @click="showAddOrderView" class="action-btn">Add Order</button>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <h2>Items</h2>
+                    <div class="button-group">
+                        <button @click="loadAndShowAllItems" class="action-btn">Show All Items</button>
+                        <button @click="showAddItemView" class="action-btn">Add Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ordersView" class="view" v-if="currentView === 'orders'">
+            <div class="container">
+                <button @click="showLandingView" class="back-btn">Back to Home</button>
+                <h2>Orders</h2>
+                <div v-if="isLoading" class="loading-indicator">Loading...</div>
+                <div v-else-if="orders.length === 0"><p>No orders found.</p></div>
+                <div v-else>
+                    <div v-for="orders in orders" :key="order.orderId" class="order-card">
+                        <h3>Order #{{ order.orderId }}</h3>
+                        <div class="order-info">
+                            <p><strong>Table:</strong> {{ order.tableNumber }}</p>
+                            <p><strong>Server:</strong> {{ order.serverName }}</p>
+                            <p><strong>Guests:</strong> {{ order.guestCount }}</p>
+                            <p><strong>Total:</strong> {{ formatCurrency(order.total) }}</p>
+                        </div>
+                        <p><strong>Notes:</strong> {{ order.notes || 'None' }}</p>
+                        <div class="card-actions">
+                            <button @click="showOrderItemsView(order.orderId)" class="show-items-btn">Show Items</button>
+                            <button @click="handleEditOrder(order.orderId)" class="edit-btn">Edit</button>
+                            <button @click="handleDeleteOrder(order.orderId)" class="delete-btn">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="orderItemsView" class="view" v-if="currentView === 'orderItems'">
+            <div class="container">
+                <button @click="showOrdersView" class="back-btn">Back to Orders</button>
+                <h2>Order Details</h2>
+                <div v-if="selectedOrder" class="order-detail-box">
+                    <h3>Order #{{ selectedOrder.orderId }}</h3>
+                    <p><strong>Table:</strong> {{ selectedOrder.tableNumber }}</p>
+                    <p><strong>Server:</strong> {{ selectOrder.serverName }}</p>
+                    <p><strong>Guests:</strong> {{ selectedOrder.guestCount }}</p>
+                    <p><strong>Total:</strong> {{ formatCurrency(selectedOrder.total) }}</p>
+                    <p><strong>Notes:</strong> {{ selectedOrder.notes || 'None' }}</p>
+                </div>
+
+                <h3>Items</h3>
+                <div v-if="isLoadingItems" class="loading-indicator">Loading items...</div>
+                <div v-else-if="orderItems.length === 0"><p>No items found for this order.</p></div>
+                <div v-else>
+                    <div v-for="item in orderItems" :key="item.itemId" class="item-card">
+                        <h4>{{ item.itemName }}</h4>
+                        <p><strong>Quantity:</strong> {{ item.itemQuantity }}</p>
+                        <p><strong>Item Price:</strong> {{ formatCurrency(item.itemPrice) }}</p>
+                        <p v-if="item.sides"><strong>Sides:</strong> {{ item.sides }}</p>
+                        <p v-if="item.sidePrice"><strong>Side Price:</strong> {{ formatCurrency(item.sidePrice) }}</p>
+                        <p><strong>Item Total:</strong> {{ formatCurrency(item.itemTotal) }}</p>
+                        <p v-if="item.modifiers"><strong>Modifiers:</strong> {{ item.modifiers }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="allItemsView" class="view" v-if="currentView === 'allItems'">
+            <div class="container">
+                <button @click="showLandingView" class="back-btn">Back to Home</button>
+                <h2>All Items</h2>
+                <div v-if="isLoading" class="loading-indicator">Loading...</div>
+                <div v-else-if="items.length === 0"><p>No items found.</p></div>
+                <div v-else>
+                    <div v-for="item in items" :key="item.itemId" class="item-card">
+                        <h4>{{ item.itemName }}</h4>
+                        <p><strong>Order ID:</strong> {{ item.orderId }}</p>
+                        <p><strong>Quantity:</strong> {{item.itemQuantity }}</p>
+                        <p><strong>Item Price:</strong> {{ formatCurrency(item.itemPrice) }}</p>
+                        <p v-if="item.sides"><strong>Sides:</strong> {{ item.sides }}</p>
+                        <p v-if="item.sidePrice"><strong>Side Price:</strong> {{ formatCurrency(item.sidePrice) }}</p>
+                        <p><strong>Item Total:</strong> {{ formatCurrency(item.itemTotal) }}</p>
+                        <p v-if="item.modifiers"><strong>Modifiers:</strong> {{ item.modifiers }}</p>
+                        <div class="card-actions">
+                            <button @click="handleEditItem(item.itemId)" class="edit-btn">Edit</button>
+                            <button @click="handleDeleteItem(item.itemId)" class="delete-btn">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="addOrderView" class="view" v-if="currentView === 'addOrder'">
+            <div class="container">
+                <button @click="showLandingView" class="back-btn">Back to Home</button> 
+                <h2>Add New Order</h2>
+                <form @submit.prevent="handleAddOrderSubmit" class="form-container">
+                    <div class="form-group">
+                        <label for="tableNumber">Table Number:</label>
+                        <input type="text" id="tableNumber" v-model="newOrder.tableNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serverName">Server Name:</label>
+                        <input type="text" id="serverName" v-model="newOrder.serverName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guestCount">Guest Count:</label>
+                        <input type="number" id="guestCount" v-model.number="newOrder.guestCount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes:</label>
+                        <textarea id="notes" rows="3" v-model="newOrder.notes"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Create Order</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="addItemView" class="view" v-if="currentView === 'addItem'">
+            <div class="container">
+                <button @click="showLandingView" class="back-btn">Back to Home</button>
+                <h2>Add New Item</h2>
+                <form @submit.prevent="handleAddItemSubmit" class="form-container">
+                    <div class="form-group">
+                        <label for="itemOrderId">Order ID:</label>
+                        <input type="number" id="itemOrderId" v-model.number="newItem.orderId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemName">Item Name:</label>
+                        <input type="text" id="itemName" v-model="newItem.itemName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQuantity">Quantity:</label>
+                        <input type="number" id="itemQuantity" v-model.number="newItem.itemQuantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Item Price:</label>
+                        <input type="number" step="0.01" id="itemPrice" v-model.number="newItem.itemPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sidePrice">Side Price (optional):</label>
+                        <textarea id="modifiers" rows="2" v-model="newItem.modifiers"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Create Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="app.js"></script>
+</head>
+</html>
